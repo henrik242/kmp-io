@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "no.synth.kmplibs"
-version = "0.5.0"
+version = "0.6.0"
 
 kotlin {
     jvm()
@@ -98,8 +98,8 @@ mavenPublishing {
         url.set("https://github.com/henrik242/kmp-libs")
         licenses {
             license {
-                name.set("LGPL-3.0-only")
-                url.set("https://opensource.org/license/lgpl-3-0")
+                name.set("MPL-2.0")
+                url.set("https://opensource.org/license/mpl-2-0")
             }
         }
         developers {
