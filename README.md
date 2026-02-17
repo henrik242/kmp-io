@@ -31,7 +31,7 @@ Published on [Maven Central](https://central.sonatype.com/artifact/no.synth.kmpl
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("no.synth.kmplibs:library:0.4.0")
+    implementation("no.synth.kmplibs:library:0.5.0")
 }
 ```
 
@@ -42,7 +42,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("no.synth.kmplibs:library:0.4.0")
+                implementation("no.synth.kmplibs:library:0.5.0")
             }
         }
     }
@@ -86,6 +86,6 @@ Requires JDK 21 and Xcode (for iOS targets).
 Tagging a release triggers the GitHub Actions workflow to publish to Maven Central:
 
 ```sh
-git tag v0.4.0
-git push origin v0.4.0
+git tag v0.5.0
+git push origin v0.5.0
 ```
