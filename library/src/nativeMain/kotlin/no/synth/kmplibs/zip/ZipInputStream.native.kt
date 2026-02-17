@@ -24,62 +24,89 @@ actual class ZipInputStream actual constructor(private val input: InputStream) :
     // For tracking data descriptor needs
     private var hasDataDescriptor = false
 
+    actual fun readBytes(): ByteArray {
+        val chunks = mutableListOf<ByteArray>()
+        var totalSize = 0
+        val buffer = ByteArray(8192)
+        while (true) {
+            val n = read(buffer, 0, buffer.size)
+            if (n == -1) break
+            chunks.add(buffer.copyOf(n))
+            totalSize += n
+        }
+        val result = ByteArray(totalSize)
+        var offset = 0
+        for (chunk in chunks) {
+            chunk.copyInto(result, offset)
+            offset += chunk.size
+        }
+        return result
+    }
+
     actual val nextEntry: ZipEntry?
         get() {
             if (closed) throw Exception("Stream closed")
             closeEntry()
 
-            val sig = readLeInt()
-            if (sig != ZipConstants.LOCAL_FILE_HEADER_SIGNATURE) return null
-
-            @Suppress("UNUSED_VARIABLE")
-            val versionNeeded = readLeShort()
-            val generalFlag = readLeShort()
-            val method = readLeShort()
-            val lastModTime = readLeShort()
-            val lastModDate = readLeShort()
-            val crc32 = readLeInt().toLong() and 0xFFFFFFFFL
-            val compressedSize = readLeInt().toLong() and 0xFFFFFFFFL
-            val uncompressedSize = readLeInt().toLong() and 0xFFFFFFFFL
-            val nameLen = readLeShort()
-            val extraLen = readLeShort()
-
-            hasDataDescriptor = (generalFlag and 0x08) != 0
-
-            val nameBytes = readExact(nameLen)
-            val name = nameBytes.decodeToString()
-
-            val extra = if (extraLen > 0) readExact(extraLen) else null
-
-            val dosTime = (lastModDate.toLong() shl 16) or lastModTime.toLong()
-
-            val entry = ZipEntry(
-                name = name,
-                size = if (hasDataDescriptor) -1L else uncompressedSize,
-                compressedSize = if (hasDataDescriptor) -1L else compressedSize,
-                crc = if (hasDataDescriptor) -1L else crc32,
-                method = method,
-                time = dosTime,
-                extra = extra,
-            )
-
-            currentEntry = entry
-            entryEof = false
-
-            when (method) {
-                ZipConstants.STORED -> {
-                    remainingBytes = if (hasDataDescriptor) Long.MAX_VALUE else compressedSize
-                }
-                ZipConstants.DEFLATED -> {
-                    inflater = Inflater().also { it.init() }
-                    inflaterBufPos = 0
-                    inflaterBufLen = 0
-                }
-                else -> throw Exception("Unsupported compression method: $method")
+            return try {
+                readNextEntry()
+            } catch (_: Exception) {
+                null
             }
-
-            return entry
         }
+
+    private fun readNextEntry(): ZipEntry? {
+        val sig = readLeInt()
+        if (sig != ZipConstants.LOCAL_FILE_HEADER_SIGNATURE) return null
+
+        @Suppress("UNUSED_VARIABLE")
+        val versionNeeded = readLeShort()
+        val generalFlag = readLeShort()
+        val method = readLeShort()
+        val lastModTime = readLeShort()
+        val lastModDate = readLeShort()
+        val crc32 = readLeInt().toLong() and 0xFFFFFFFFL
+        val compressedSize = readLeInt().toLong() and 0xFFFFFFFFL
+        val uncompressedSize = readLeInt().toLong() and 0xFFFFFFFFL
+        val nameLen = readLeShort()
+        val extraLen = readLeShort()
+
+        hasDataDescriptor = (generalFlag and 0x08) != 0
+
+        val nameBytes = readExact(nameLen)
+        val name = nameBytes.decodeToString()
+
+        val extra = if (extraLen > 0) readExact(extraLen) else null
+
+        val dosTime = (lastModDate.toLong() shl 16) or lastModTime.toLong()
+
+        val entry = ZipEntry(
+            name = name,
+            size = if (hasDataDescriptor) -1L else uncompressedSize,
+            compressedSize = if (hasDataDescriptor) -1L else compressedSize,
+            crc = if (hasDataDescriptor) -1L else crc32,
+            method = method,
+            time = dosTime,
+            extra = extra,
+        )
+
+        currentEntry = entry
+        entryEof = false
+
+        when (method) {
+            ZipConstants.STORED -> {
+                remainingBytes = if (hasDataDescriptor) Long.MAX_VALUE else compressedSize
+            }
+            ZipConstants.DEFLATED -> {
+                inflater = Inflater().also { it.init() }
+                inflaterBufPos = 0
+                inflaterBufLen = 0
+            }
+            else -> throw Exception("Unsupported compression method: $method")
+        }
+
+        return entry
+    }
 
     actual fun closeEntry() {
         if (entryEof) return

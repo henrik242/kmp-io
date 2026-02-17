@@ -15,6 +15,8 @@ actual class ZipInputStream actual constructor(input: InputStream) : InputStream
         jvmZis.closeEntry()
     }
 
+    actual fun readBytes(): ByteArray = jvmZis.readBytes()
+
     actual override fun read(): Int = jvmZis.read()
 
     actual override fun read(b: ByteArray, off: Int, len: Int): Int = jvmZis.read(b, off, len)

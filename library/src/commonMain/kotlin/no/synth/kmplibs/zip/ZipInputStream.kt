@@ -5,6 +5,7 @@ import no.synth.kmplibs.io.InputStream
 expect class ZipInputStream(input: InputStream) : InputStream {
     val nextEntry: ZipEntry?
     fun closeEntry()
+    fun readBytes(): ByteArray
     override fun read(): Int
     override fun read(b: ByteArray, off: Int, len: Int): Int
     override fun available(): Int

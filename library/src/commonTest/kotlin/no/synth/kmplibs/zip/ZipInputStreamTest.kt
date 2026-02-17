@@ -1,6 +1,5 @@
 package no.synth.kmplibs.zip
 
-import no.synth.kmplibs.io.readBytes
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -376,6 +375,30 @@ class ZipInputStreamTest {
         assertEquals("subdir/nested.txt", entry3.name)
         assertEquals("Nested file", readEntryContent(zis))
 
+        assertNull(zis.nextEntry)
+        zis.close()
+    }
+
+    // -- Invalid/empty data --
+
+    @Test
+    fun emptyByteArrayReturnsNullEntry() {
+        val zis = ZipInputStream(byteArrayOf())
+        assertNull(zis.nextEntry)
+        zis.close()
+    }
+
+    @Test
+    fun invalidDataReturnsNullEntry() {
+        val zis = ZipInputStream(byteArrayOf(0x00, 0x01, 0x02))
+        assertNull(zis.nextEntry)
+        zis.close()
+    }
+
+    @Test
+    fun truncatedHeaderReturnsNullEntry() {
+        // Just the PK signature without the rest of the header
+        val zis = ZipInputStream(byteArrayOf(0x50, 0x4B, 0x03, 0x04))
         assertNull(zis.nextEntry)
         zis.close()
     }
