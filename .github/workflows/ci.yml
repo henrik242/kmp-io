@@ -16,6 +16,21 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew build
+      - uses: actions/cache@v4
+        with:
+          path: ~/.konan
+          key: konan-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-${{ runner.os }}-
+      - run: ./gradlew :library:build
       - run: ./gradlew :library:jvmTest
       - run: ./gradlew :library:iosSimulatorArm64Test
+      - run: ./gradlew :library:publishToMavenLocal
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: library/build/reports/tests/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: maven-artifacts
+          path: ~/.m2/repository/no/synth/kmplibs/
