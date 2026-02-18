@@ -31,7 +31,7 @@ Published on [Maven Central](https://central.sonatype.com/artifact/no.synth/kmp-
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("no.synth:kmp-io:0.6.0")
+    implementation("no.synth:kmp-io:0.6.2")
 }
 ```
 
@@ -42,7 +42,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("no.synth:kmp-io:0.6.0")
+                implementation("no.synth:kmp-io:0.6.2")
             }
         }
     }
@@ -86,6 +86,6 @@ Requires JDK 21 and Xcode (for iOS targets).
 Tagging a release triggers the GitHub Actions workflow to publish to Maven Central:
 
 ```sh
-git tag v0.6.0
-git push origin v0.6.0
+git tag v0.6.2
+git push origin v0.6.2
 ```
