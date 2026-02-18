@@ -26,12 +26,12 @@ On JVM, the implementations delegate to `java.io` and `java.util.zip`. On iOS/Na
 
 ## Installation
 
-Published on [Maven Central](https://central.sonatype.com/artifact/no.synth.kmplibs/library). No special repository configuration needed.
+Published on [Maven Central](https://central.sonatype.com/artifact/no.synth/kmp-io). No special repository configuration needed.
 
 ```kotlin
 // build.gradle.kts
 dependencies {
-    implementation("no.synth.kmplibs:library:0.6.0")
+    implementation("no.synth:kmp-io:0.6.0")
 }
 ```
 
@@ -42,7 +42,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("no.synth.kmplibs:library:0.6.0")
+                implementation("no.synth:kmp-io:0.6.0")
             }
         }
     }

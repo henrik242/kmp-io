@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
-group = "no.synth.kmplibs"
+group = "no.synth"
 version = "0.6.0"
 
 kotlin {
@@ -93,7 +93,7 @@ mavenPublishing {
     }
 
     pom {
-        name.set("kmp-libs")
+        name.set("kmp-io")
         description.set("Kotlin Multiplatform ByteArrayInputStream and ZipInputStream for JVM and iOS")
         url.set("https://github.com/henrik242/kmp-libs")
         licenses {
