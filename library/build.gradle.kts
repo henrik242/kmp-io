@@ -31,11 +31,11 @@ val generateNativeTestData by tasks.registering {
     val resourceDir = layout.projectDirectory.dir("src/commonTest/resources/testdata")
     outputs.dir(outputDir)
     doLast {
-        val dir = outputDir.get().asFile.resolve("no/synth/kmplibs/zip")
+        val dir = outputDir.get().asFile.resolve("no/synth/kmpio/zip")
         dir.mkdirs()
         val resPath = resourceDir.asFile.absolutePath
         dir.resolve("TestData.native.kt").writeText("""
-package no.synth.kmplibs.zip
+package no.synth.kmpio.zip
 
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
@@ -95,7 +95,7 @@ mavenPublishing {
     pom {
         name.set("kmp-io")
         description.set("Kotlin Multiplatform ByteArrayInputStream and ZipInputStream for JVM and iOS")
-        url.set("https://github.com/henrik242/kmp-libs")
+        url.set("https://github.com/henrik242/kmp-io")
         licenses {
             license {
                 name.set("MPL-2.0")
@@ -109,9 +109,9 @@ mavenPublishing {
             }
         }
         scm {
-            url.set("https://github.com/henrik242/kmp-libs")
-            connection.set("scm:git:git://github.com/henrik242/kmp-libs.git")
-            developerConnection.set("scm:git:ssh://git@github.com/henrik242/kmp-libs.git")
+            url.set("https://github.com/henrik242/kmp-io")
+            connection.set("scm:git:git://github.com/henrik242/kmp-io.git")
+            developerConnection.set("scm:git:ssh://git@github.com/henrik242/kmp-io.git")
         }
     }
 }
