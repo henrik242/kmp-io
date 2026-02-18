@@ -88,7 +88,7 @@ listOf("iosX64Test", "iosArm64Test", "iosSimulatorArm64Test").forEach { name ->
 
 mavenPublishing {
     publishToMavenCentral(automaticRelease = true)
-    if (providers.environmentVariable("CI").isPresent) {
+    if (providers.gradleProperty("signingInMemoryKey").isPresent) {
         signAllPublications()
     }
 
