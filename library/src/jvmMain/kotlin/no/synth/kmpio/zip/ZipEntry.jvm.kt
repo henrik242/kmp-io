@@ -1,6 +1,7 @@
 package no.synth.kmpio.zip
 
 actual class ZipEntry internal constructor(internal val jvmEntry: java.util.zip.ZipEntry) {
+    actual constructor(name: String) : this(java.util.zip.ZipEntry(name))
     actual val name: String get() = jvmEntry.name
     actual var size: Long
         get() = jvmEntry.size

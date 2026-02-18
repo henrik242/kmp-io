@@ -1,6 +1,7 @@
 package no.synth.kmpio.zip
 
 expect class ZipEntry {
+    constructor(name: String)
     val name: String
     var size: Long
     var compressedSize: Long
