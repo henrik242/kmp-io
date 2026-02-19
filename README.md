@@ -1,6 +1,6 @@
-# kmp-io
+# kmp-zip
 
-Kotlin Multiplatform I/O and ZIP library for JVM and iOS targets.
+Kotlin Multiplatform ZIP library for JVM and iOS targets.
 
 Provides `ByteArrayInputStream`, `ByteArrayOutputStream`, `ZipInputStream`, and `ZipOutputStream` with a common API across platforms. On JVM, the implementations delegate to `java.io` and `java.util.zip`. On iOS/Native, they are pure Kotlin implementations using `platform.zlib` for DEFLATE compression and decompression.
 
@@ -8,8 +8,8 @@ Provides `ByteArrayInputStream`, `ByteArrayOutputStream`, `ZipInputStream`, and 
 
 | Artifact | Description |
 |----------|-------------|
-| `no.synth:kmp-io` | Core I/O and ZIP streams |
-| `no.synth:kmp-io-kotlinx` | [kotlinx-io](https://github.com/Kotlin/kotlinx-io) `Source`/`Sink` adapters for the core streams |
+| `no.synth:kmp-zip` | Core I/O and ZIP streams |
+| `no.synth:kmp-zip-kotlinx` | [kotlinx-io](https://github.com/Kotlin/kotlinx-io) `Source`/`Sink` adapters for the core streams |
 
 ## Targets
 
@@ -18,17 +18,17 @@ Provides `ByteArrayInputStream`, `ByteArrayOutputStream`, `ZipInputStream`, and 
 
 ## Installation
 
-Published on [Maven Central](https://central.sonatype.com/artifact/no.synth/kmp-io). No special repository configuration needed.
+Published on [Maven Central](https://central.sonatype.com/artifact/no.synth/kmp-zip). No special repository configuration needed.
 
 ```kotlin
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("no.synth:kmp-io:0.6.3")
+                implementation("no.synth:kmp-zip:0.7.0")
 
                 // Optional: kotlinx-io adapters
-                implementation("no.synth:kmp-io-kotlinx:0.6.3")
+                implementation("no.synth:kmp-zip-kotlinx:0.7.0")
             }
         }
     }
@@ -37,7 +37,7 @@ kotlin {
 
 ## API
 
-### `kmp-io` — `no.synth.kmpio.io`
+### `kmp-zip` — `no.synth.kmpzip.io`
 
 | Type | Description |
 |------|-------------|
@@ -47,7 +47,7 @@ kotlin {
 | `ByteArrayOutputStream` | Auto-growing buffer with `toByteArray()`, `size()`, `reset()`, `writeTo()` |
 | `InputStream.readBytes()` | Extension that reads all remaining bytes |
 
-### `kmp-io` — `no.synth.kmpio.zip`
+### `kmp-zip` — `no.synth.kmpzip.zip`
 
 | Type | Description |
 |------|-------------|
@@ -57,7 +57,7 @@ kotlin {
 | `ZipEntry` | Entry metadata — `name`, `size`, `compressedSize`, `crc`, `method`, `isDirectory`, `time`, `comment`, `extra` |
 | `ZipConstants` | `STORED = 0`, `DEFLATED = 8` |
 
-### `kmp-io-kotlinx` — `no.synth.kmpio.kotlinx`
+### `kmp-zip-kotlinx` — `no.synth.kmpzip.kotlinx`
 
 | Type | Description |
 |------|-------------|
@@ -97,8 +97,8 @@ val zipBytes = buf.toByteArray()
 
 ```kotlin
 import kotlinx.io.Buffer
-import no.synth.kmpio.kotlinx.ZipInputStream
-import no.synth.kmpio.kotlinx.ZipOutputStream
+import no.synth.kmpzip.kotlinx.ZipInputStream
+import no.synth.kmpzip.kotlinx.ZipOutputStream
 
 val buffer = Buffer()
 
@@ -131,8 +131,8 @@ Requires JDK 21 and Xcode (for iOS targets).
 Tagging a release triggers the GitHub Actions workflow to publish to Maven Central:
 
 ```sh
-git tag v0.6.3
-git push origin v0.6.3
+git tag v0.7.0
+git push origin v0.7.0
 ```
 
 ## License
