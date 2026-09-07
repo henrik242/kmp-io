@@ -2,7 +2,7 @@
 kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
 kotlinx-io = "0.9.1"
-okio = "3.18.1"
+okio = "3.18.2"
 maven-publish = "0.37.0"
 zip4j = "2.11.6"
 
