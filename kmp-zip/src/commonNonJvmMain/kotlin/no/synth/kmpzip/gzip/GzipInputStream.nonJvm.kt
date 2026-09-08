@@ -57,11 +57,11 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
                 // permits concatenated members and standard tools (gunzip, java.util.zip)
                 // decode them all.
                 if (inputBufPos == inputBufLen) {
+                    // Probing for a following member: no more data means no more
+                    // members. This cannot spin, so a 0 is treated as end of input
+                    // rather than failing a member that already decoded cleanly.
                     val n = input.read(inputBuf, 0, inputBuf.size)
-                    if (n == 0) {
-                        throw NoProgressException("Source returned no data while checking for another gzip member")
-                    }
-                    if (n == -1) {
+                    if (n <= 0) {
                         eof = true
                         return if (result.bytesProduced > 0) result.bytesProduced else -1
                     }

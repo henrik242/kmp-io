@@ -360,6 +360,9 @@ class ZipInputStream @JvmOverloads constructor(
     override fun read(b: ByteArray, off: Int, len: Int): Int {
         val entry = currentEntry
         if (entryEof || entry == null) return -1
+        // A zero-length read reads nothing: it must not mark the entry as started, and
+        // must not reach the inflater, which would see no output space and no progress.
+        if (len == 0) return 0
         entryReadStarted = true
         return when (entry.method) {
             ZipConstants.STORED -> readStored(b, off, len)
