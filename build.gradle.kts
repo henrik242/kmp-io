@@ -1,4 +1,6 @@
+import java.time.Duration
 import org.gradle.api.attributes.java.TargetJvmVersion
+import org.gradle.api.tasks.testing.AbstractTestTask
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.targets.jvm.KotlinJvmTarget
@@ -38,6 +40,16 @@ allprojects {
                 tasks.withType<Test>().configureEach { javaLauncher.set(launcher) }
             }
         }
+    }
+
+    // Backstop against a runaway test process. A synchronous spin in js/wasmJs
+    // test code blocks the single JS thread, so the runner's own timeout can
+    // never fire (KGP passes mocha --timeout 2s and the timer just never runs),
+    // and the node process then outlives the build, burning cores until it is
+    // killed by hand. A task timeout fails the task and reaps the child. The
+    // whole suite runs in well under a minute, so this only ever trips on a hang.
+    tasks.withType<AbstractTestTask>().configureEach {
+        timeout.set(Duration.ofMinutes(10))
     }
 
     tasks.withType<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>().configureEach {
