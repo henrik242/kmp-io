@@ -6,6 +6,7 @@ import no.synth.kmpzip.crypto.AesStrength
 import no.synth.kmpzip.crypto.WinZipAesCipher
 import no.synth.kmpzip.crypto.ZipCrypto
 import no.synth.kmpzip.crypto.secureRandomBytes
+import no.synth.kmpzip.io.NoProgressException
 import no.synth.kmpzip.io.OutputStream
 
 /**
@@ -224,7 +225,7 @@ class ZipOutputStream @JvmOverloads constructor(
             }
             // Neither side advanced, so another pass would do the same thing forever.
             if (result.bytesConsumed == 0 && result.bytesProduced == 0) {
-                throw Exception("Deflater made no progress on entry: ${currentEntry?.name}")
+                throw NoProgressException("Deflater made no progress on entry: ${currentEntry?.name}")
             }
         }
     }
@@ -440,7 +441,7 @@ class ZipOutputStream @JvmOverloads constructor(
             if (result.streamEnd) break
             // Finishing with no output and no stream end means the deflater is stuck.
             if (result.bytesProduced == 0) {
-                throw Exception("Deflater made no progress finishing entry: ${currentEntry?.name}")
+                throw NoProgressException("Deflater made no progress finishing entry: ${currentEntry?.name}")
             }
         }
     }

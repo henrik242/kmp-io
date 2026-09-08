@@ -7,6 +7,10 @@ fun InputStream.readBytes(): ByteArray {
     while (true) {
         val n = read(buffer, 0, buffer.size)
         if (n == -1) break
+        // Not EOF, but no bytes either: the loop would spin forever appending nothing.
+        if (n == 0) {
+            throw NoProgressException("Source returned no data for a non-empty read")
+        }
         chunks.add(buffer.copyOf(n))
         totalSize += n
     }

@@ -7,6 +7,7 @@ import no.synth.kmpzip.crypto.Crc32
 import no.synth.kmpzip.crypto.WinZipAesCipher
 import no.synth.kmpzip.crypto.ZipCrypto
 import no.synth.kmpzip.io.InputStream
+import no.synth.kmpzip.io.NoProgressException
 
 /**
  * Reads ZIP entries from an input stream, with optional decryption.
@@ -435,7 +436,7 @@ class ZipInputStream @JvmOverloads constructor(
                 // unread it is making no progress, and the refill below would both spin
                 // and overwrite the unread bytes.
                 if (inflaterBufPos < inflaterBufLen) {
-                    throw Exception("Inflater made no progress on entry: ${currentEntry?.name}")
+                    throw NoProgressException("Inflater made no progress on entry: ${currentEntry?.name}")
                 }
             }
 
@@ -461,7 +462,7 @@ class ZipInputStream @JvmOverloads constructor(
             // An InputStream signals EOF with -1, but not every implementation
             // honours that; a 0 here means no new input and the loop would spin.
             if (n == 0) {
-                throw Exception("Truncated deflated entry: source returned no data before end of compressed data")
+                throw NoProgressException("Source returned no data before end of compressed data on entry: ${currentEntry?.name}")
             }
             inflaterBufPos = 0
             inflaterBufLen = n
