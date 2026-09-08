@@ -29,6 +29,31 @@ class ZipStreamNoProgressTest {
         }
     }
 
+    /**
+     * The stored path has no inflater to notice the stall, so it needs its own guard.
+     * stored.zip's entry data spans offsets 39..52, so stalling at 45 leaves the entry
+     * half-read with more bytes still owed.
+     */
+    @Test
+    fun stalledSourceOnStoredEntryThrowsInsteadOfSpinning() {
+        assertFailsWith<NoProgressException> {
+            ZipInputStream(StallingInputStream(TestData.storedZip, 45)).use { zis ->
+                zis.nextEntry
+                zis.readBytes()
+            }
+        }
+    }
+
+    /** A stall inside the local header hits readExact, which advances by the read count. */
+    @Test
+    fun stalledSourceInLocalHeaderThrowsInsteadOfSpinning() {
+        assertFailsWith<NoProgressException> {
+            ZipInputStream(StallingInputStream(TestData.storedZip, 32)).use { zis ->
+                zis.nextEntry
+            }
+        }
+    }
+
     @Test
     fun readBytesOnStalledSourceThrowsInsteadOfSpinning() {
         val data = TestData.binaryZip

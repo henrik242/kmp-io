@@ -81,6 +81,11 @@ class ZipInputStream @JvmOverloads constructor(
 
     private var firstSignatureRead: Boolean = false
 
+    // Shadows the InputStream.readBytes() extension (a member wins over an extension),
+    // so it repeats the extension's no-progress guard rather than inheriting it. read()
+    // no longer returns 0 for a non-empty request, so this is a backstop: if that ever
+    // regresses, this loop would spin while growing `chunks` with empty arrays until the
+    // heap runs out, which is how it failed before the read paths were guarded.
     fun readBytes(): ByteArray {
         val chunks = mutableListOf<ByteArray>()
         var totalSize = 0
@@ -88,6 +93,9 @@ class ZipInputStream @JvmOverloads constructor(
         while (true) {
             val n = read(buffer, 0, buffer.size)
             if (n == -1) break
+            if (n == 0) {
+                throw NoProgressException("Source returned no data for a non-empty read")
+            }
             chunks.add(buffer.copyOf(n))
             totalSize += n
         }
@@ -287,7 +295,14 @@ class ZipInputStream @JvmOverloads constructor(
         } else {
             val skipBuf = ByteArray(8192)
             while (!entryEof) {
-                if (read(skipBuf, 0, skipBuf.size) == -1) break
+                val n = read(skipBuf, 0, skipBuf.size)
+                if (n == -1) break
+                // read() no longer returns 0 for a non-empty request, but this loop runs
+                // from close()/use{} and nextEntry, so a future regression here would hang
+                // cleanup rather than fail a read. Keep it loud.
+                if (n == 0) {
+                    throw NoProgressException("Source made no progress draining entry: ${currentEntry?.name}")
+                }
             }
         }
         currentEntry = null
@@ -383,6 +398,9 @@ class ZipInputStream @JvmOverloads constructor(
                 finishEntry()
                 return -1
             }
+            if (n == 0) {
+                throw NoProgressException("Source returned no data on entry: ${currentEntry?.name}")
+            }
             entryCrc?.update(b, off, n)
             return n
         }
@@ -401,6 +419,9 @@ class ZipInputStream @JvmOverloads constructor(
         if (n == -1) {
             finishEntry()
             return -1
+        }
+        if (n == 0) {
+            throw NoProgressException("Source returned no data on entry: ${currentEntry?.name}")
         }
         legacyCipher?.decrypt(b, off, n)
         entryCrc?.update(b, off, n)
@@ -693,6 +714,9 @@ class ZipInputStream @JvmOverloads constructor(
         while (offset < n) {
             val read = readRaw(buf, offset, n - offset)
             if (read == -1) throw Exception("Unexpected end of ZIP stream")
+            if (read == 0) {
+                throw NoProgressException("Source returned no data while reading the ZIP structure")
+            }
             offset += read
         }
         return buf

@@ -13,6 +13,17 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
     private var eof = false
 
     init {
+        // The inflater is already allocated by the property initialiser above, and a throw
+        // from here never reaches close(), so release it before propagating.
+        try {
+            validateHeader()
+        } catch (e: Throwable) {
+            inflater.end()
+            throw e
+        }
+    }
+
+    private fun validateHeader() {
         // Validate the gzip magic upfront so callers get a clear error instead
         // of a cryptic zlib `inflate failed: -3` mid-stream.
         var got = 0
@@ -75,6 +86,13 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
 
             if (result.bytesProduced > 0) {
                 return result.bytesProduced
+            }
+
+            // The inflater wants more input and should have consumed everything buffered.
+            // The refill below always starts at offset 0, so anything left behind would be
+            // silently dropped and resurface later as a truncation or CRC error.
+            if (inputBufPos < inputBufLen) {
+                throw NoProgressException("Inflater made no progress on the gzip stream")
             }
 
             // Produced nothing and not at stream end → need more input.

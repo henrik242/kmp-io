@@ -13,8 +13,12 @@ internal class StallingInputStream(
 ) : InputStream() {
     private var pos = 0
 
+    // The single-byte form cannot express a stall: 0 is a valid byte value, not "no
+    // data". Returning it would feed a fabricated 0x00 into byte-at-a-time header
+    // parsing and mask exactly the bugs this double exists to expose, so report end of
+    // input instead and leave stall modelling to the bulk overload.
     override fun read(): Int {
-        if (pos >= prefix) return 0
+        if (pos >= prefix) return -1
         return data[pos++].toInt() and 0xFF
     }
 
