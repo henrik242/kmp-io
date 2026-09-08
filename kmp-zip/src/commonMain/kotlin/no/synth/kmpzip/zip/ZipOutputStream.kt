@@ -222,6 +222,10 @@ class ZipOutputStream @JvmOverloads constructor(
                 emitCompressed(deflateBuf, 0, result.bytesProduced)
                 entryCompressedSize += result.bytesProduced
             }
+            // Neither side advanced, so another pass would do the same thing forever.
+            if (result.bytesConsumed == 0 && result.bytesProduced == 0) {
+                throw Exception("Deflater made no progress on entry: ${currentEntry?.name}")
+            }
         }
     }
 
@@ -434,6 +438,10 @@ class ZipOutputStream @JvmOverloads constructor(
                 entryCompressedSize += result.bytesProduced
             }
             if (result.streamEnd) break
+            // Finishing with no output and no stream end means the deflater is stuck.
+            if (result.bytesProduced == 0) {
+                throw Exception("Deflater made no progress finishing entry: ${currentEntry?.name}")
+            }
         }
     }
 

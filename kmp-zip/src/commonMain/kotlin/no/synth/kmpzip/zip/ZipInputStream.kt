@@ -430,6 +430,13 @@ class ZipInputStream @JvmOverloads constructor(
                     finishEntry()
                     return -1
                 }
+                // Produced nothing and not at stream end, so the inflater wants more
+                // input and should have consumed everything buffered. If it left bytes
+                // unread it is making no progress, and the refill below would both spin
+                // and overwrite the unread bytes.
+                if (inflaterBufPos < inflaterBufLen) {
+                    throw Exception("Inflater made no progress on entry: ${currentEntry?.name}")
+                }
             }
 
             // Fill the inflater buffer — decrypt if needed
@@ -450,6 +457,11 @@ class ZipInputStream @JvmOverloads constructor(
                 }
                 finishEntry()
                 return if (result.streamEnd) -1 else -1
+            }
+            // An InputStream signals EOF with -1, but not every implementation
+            // honours that; a 0 here means no new input and the loop would spin.
+            if (n == 0) {
+                throw Exception("Truncated deflated entry: source returned no data before end of compressed data")
             }
             inflaterBufPos = 0
             inflaterBufLen = n
