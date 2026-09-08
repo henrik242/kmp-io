@@ -1,15 +1,10 @@
 package no.synth.kmpzip.zip
 
-import no.synth.kmpzip.internal.Uint8Array
 import no.synth.kmpzip.io.fileSeekableSource
 import no.synth.kmpzip.io.readBytes
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
-
-// js() intrinsics must be top-level (Kotlin/Wasm requirement).
-private fun tmpDir(): String = js("require('os').tmpdir()")
-private fun writeFile(path: String, buf: Uint8Array) { js("require('fs').writeFileSync(path, buf)") }
 
 // Exercises the Node-backed fileSeekableSource at runtime. The browser test task is
 // disabled (see build.gradle.kts), so this only ever runs under Node, where `fs`
@@ -18,8 +13,8 @@ class ZipFileNodeTest {
 
     private fun writeTempZip(bytes: ByteArray): String {
         // js and wasmJs run this same test, so keep the paths from colliding.
-        val path = tmpDir() + "/kmpzip-" + bytes.size + "-" + Random.nextInt(Int.MAX_VALUE) + ".zip"
-        writeFile(path, byteArrayToUint8Array(bytes, 0, bytes.size))
+        val path = tmpdir() + "/kmpzip-" + bytes.size + "-" + Random.nextInt(Int.MAX_VALUE) + ".zip"
+        writeFileSync(path, byteArrayToUint8Array(bytes, 0, bytes.size))
         return path
     }
 
