@@ -29,7 +29,7 @@ internal actual class PlatformDeflater actual constructor() {
     ): DeflateResult {
         val d = deflater ?: throw IllegalStateException("Deflater not initialized")
 
-        var produced = drain.draw(d.chunks, d.result, output, outputOffset, outputLen)
+        var produced = drain.draw(d.chunks, d.result, d.ended, output, outputOffset, outputLen)
         var consumed = 0
 
         val canPush = produced < outputLen && !d.ended && (inputLen > 0 || finish)
@@ -41,10 +41,10 @@ internal actual class PlatformDeflater actual constructor() {
                 throw IllegalStateException("pako deflate failed: err=${d.err}, msg=${d.msg}")
             }
             consumed = inputLen
-            produced += drain.draw(d.chunks, d.result, output, outputOffset + produced, outputLen - produced)
+            produced += drain.draw(d.chunks, d.result, d.ended, output, outputOffset + produced, outputLen - produced)
         }
 
-        return DeflateResult(consumed, produced, drain.isStreamEnd(d.result))
+        return DeflateResult(consumed, produced, drain.isStreamEnd(d.result, d.ended))
     }
 
     actual fun end() {
@@ -53,5 +53,5 @@ internal actual class PlatformDeflater actual constructor() {
     }
 
     actual val isFinished: Boolean
-        get() = deflater?.let { drain.isStreamEnd(it.result) } ?: true
+        get() = deflater?.let { drain.isStreamEnd(it.result, it.ended) } ?: true
 }

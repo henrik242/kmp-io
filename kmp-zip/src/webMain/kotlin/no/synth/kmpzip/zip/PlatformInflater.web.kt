@@ -31,16 +31,16 @@ internal actual class PlatformInflater actual constructor() {
         output: ByteArray, outputOffset: Int, outputLen: Int,
     ): InflateResult {
         val inf = inflater ?: throw IllegalStateException("Inflater not initialized")
-        if (drain.isStreamEnd(inf.result)) return InflateResult(0, 0, true)
+        if (drain.isStreamEnd(inf.result, inf.ended)) return InflateResult(0, 0, true)
 
-        var produced = drain.draw(inf.chunks, inf.result, output, outputOffset, outputLen)
+        var produced = drain.draw(inf.chunks, inf.result, inf.ended, output, outputOffset, outputLen)
         var consumed = 0
 
         if (produced < outputLen && inputLen > 0 && !inf.ended) {
             val chunk = byteArrayToUint8Array(input, inputOffset, inputLen)
             val ok = inf.push(chunk, Z_NO_FLUSH)
             if (!ok) {
-                // Defensive: pako 2.x's Inflate.push() doesn't currently surface
+                // Defensive: pako's Inflate.push() doesn't currently surface
                 // Z_BUF_ERROR through this return value, but the native impl
                 // tolerates it and we keep parity in case pako's behaviour changes.
                 if (inf.err != Z_BUF_ERROR) {
@@ -51,10 +51,10 @@ internal actual class PlatformInflater actual constructor() {
             // unread tail is the start of the ZIP data descriptor and must be
             // returned to the caller.
             consumed = inputLen - strmAvailIn(inf.strm)
-            produced += drain.draw(inf.chunks, inf.result, output, outputOffset + produced, outputLen - produced)
+            produced += drain.draw(inf.chunks, inf.result, inf.ended, output, outputOffset + produced, outputLen - produced)
         }
 
-        return InflateResult(consumed, produced, drain.isStreamEnd(inf.result))
+        return InflateResult(consumed, produced, drain.isStreamEnd(inf.result, inf.ended))
     }
 
     actual fun end() {
@@ -63,5 +63,5 @@ internal actual class PlatformInflater actual constructor() {
     }
 
     actual val isFinished: Boolean
-        get() = inflater?.let { drain.isStreamEnd(it.result) } ?: true
+        get() = inflater?.let { drain.isStreamEnd(it.result, it.ended) } ?: true
 }

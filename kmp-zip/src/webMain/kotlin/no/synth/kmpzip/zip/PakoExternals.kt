@@ -4,8 +4,11 @@ package no.synth.kmpzip.zip
 
 import no.synth.kmpzip.internal.Uint8Array
 
-// pako 2.x ESM externals — `new pako.Deflate({...})` and `new pako.Inflate({...})`.
-// PakoOutputDrain.kt explains how `chunks` and `result` interact at runtime.
+// pako externals - `new pako.Deflate({...})` and `new pako.Inflate({...})`.
+// PakoOutputDrain.kt explains how `chunks`, `result` and `ended` interact at
+// runtime. pako 3 marks `chunks`, `ended` and `strm` internal in its .d.ts;
+// they are still plain fields on the instances, but nothing promises they stay,
+// so a pako major bump needs the web deflate/inflate tests re-run.
 internal external class Deflate(options: JsAny) {
     val err: Int
     val msg: String

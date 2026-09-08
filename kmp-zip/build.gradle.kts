@@ -179,11 +179,13 @@ kotlin {
             dependsOn(commonNonJvmMain)
             dependsOn(pureKotlinCryptoMain)
             dependencies {
-                // pako 2.1.0 is the de-facto sync zlib in JS — feature-frozen, zero
-                // deps, matches our PlatformDeflater/PlatformInflater contract 1:1
-                // (raw/zlib/gzip wbits, Z_NO_FLUSH/Z_FINISH, synchronous push).
-                // Pinned to exact version; consumers should use a lockfile.
-                implementation(npm("pako", "2.1.0"))
+                // pako is the de-facto sync zlib in JS - zero deps, matches our
+                // PlatformDeflater/PlatformInflater contract 1:1 (raw/zlib/gzip
+                // wbits, Z_NO_FLUSH/Z_FINISH, synchronous push). 3.x is ESM-first
+                // but still ships a CJS build, which is what moduleKind COMMONJS
+                // above resolves. Pinned to exact version; consumers should use a
+                // lockfile.
+                implementation(npm("pako", "3.0.1"))
             }
         }
 
