@@ -164,6 +164,13 @@ kotlin {
         val commonNonJvmMain = create("commonNonJvmMain") { dependsOn(sourceSets["commonMain"]) }
         sourceSets["nativeMain"].dependsOn(commonNonJvmMain)
 
+        // Test mirror of commonNonJvmMain. GzipInputStream's pure-Kotlin actual only
+        // exists off the JVM (the jvm actual delegates to java.util.zip), so tests that
+        // pin its behaviour cannot live in commonTest.
+        val commonNonJvmTest = create("commonNonJvmTest") { dependsOn(sourceSets["commonTest"]) }
+        sourceSets["nativeTest"].dependsOn(commonNonJvmTest)
+        sourceSets["webTest"].dependsOn(commonNonJvmTest)
+
         // Holds the AES / HMAC / PBKDF2 wrappers that delegate to the pure-Kotlin
         // crypto in commonMain. Shared by every target without a platform crypto
         // library (linux/mingw native + js/wasmJs). Apple/JVM use platform impls.

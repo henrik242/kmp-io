@@ -1,6 +1,7 @@
 package no.synth.kmpzip.gzip
 
 import no.synth.kmpzip.io.InputStream
+import no.synth.kmpzip.io.NoProgressException
 import no.synth.kmpzip.zip.PlatformInflater
 
 actual class GzipInputStream actual constructor(private val input: InputStream) : InputStream() {
@@ -18,6 +19,9 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
         while (got < 2) {
             val n = input.read(inputBuf, got, 2 - got)
             if (n == -1) break
+            if (n == 0) {
+                throw NoProgressException("Source returned no data while reading the gzip header")
+            }
             got += n
         }
         if (got < 2 ||
@@ -54,7 +58,10 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
                 // decode them all.
                 if (inputBufPos == inputBufLen) {
                     val n = input.read(inputBuf, 0, inputBuf.size)
-                    if (n <= 0) {
+                    if (n == 0) {
+                        throw NoProgressException("Source returned no data while checking for another gzip member")
+                    }
+                    if (n == -1) {
                         eof = true
                         return if (result.bytesProduced > 0) result.bytesProduced else -1
                     }
@@ -71,11 +78,13 @@ actual class GzipInputStream actual constructor(private val input: InputStream) 
             }
 
             // Produced nothing and not at stream end → need more input.
-            // n == 0 is treated as EOF: a well-behaved InputStream returns -1 at EOF,
-            // but some implementations return 0; without the guard the loop would spin.
             val n = input.read(inputBuf, 0, inputBuf.size)
-            if (n <= 0) {
+            if (n == -1) {
                 throw Exception("Truncated gzip stream: unexpected EOF before end of compressed data")
+            }
+            // Not EOF but no bytes either; without this the loop would spin.
+            if (n == 0) {
+                throw NoProgressException("Source returned no data before end of compressed data")
             }
             inputBufPos = 0
             inputBufLen = n
